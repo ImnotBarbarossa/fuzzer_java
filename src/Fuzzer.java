@@ -1,17 +1,12 @@
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.util.Collections;
 import java.util.Random;
 
 public class Fuzzer {
 
     public static void main(String[] args) {
-
+        /* Do this program arg : "testinput.img" 100 50 0.01 */
         /* Get the data from the line */
         File fileName = new File(args[0]);
         int numberTests = Integer.parseInt(args[1]);
@@ -21,52 +16,49 @@ public class Fuzzer {
         /* Read the file */
         byte[] data = read_file(fileName);
         /* Printing all the data */
-        print_data(data, numberTests, maxNumberModif, percentChange);
+//        print_data(data, numberTests, maxNumberModif, percentChange);
 
 
         for (int i = 0; i < numberTests; i++) {
-            byte[] dataCopy = data;
+            byte[] dataCopy = new byte[data.length];
+            System.arraycopy( data, 0, dataCopy, 0, data.length );
+
 
             System.out.println("===== Test number : " + i + " =====");
 
-            dataCopy = randomize_data(dataCopy, maxNumberModif, percentChange);
+            System.arraycopy(randomize_data(dataCopy, maxNumberModif, percentChange), 0, dataCopy, 0, dataCopy.length );
 
-            String toWrite = new String(dataCopy, StandardCharsets.UTF_16LE);
 
-            System.out.println("TOWRITE : " + toWrite);
+//            System.out.println("===== DataCopy =====");
+//            for (int g = 0; g < dataCopy.length; g++) {
+//                System.out.print(dataCopy[g]);
+//            }
+//            System.out.println();
 
             Path inputFile = Paths.get("testinput" + i + ".img");
+
+
             try {
-                Files.write(inputFile, Collections.singleton(toWrite));
+                Files.write(inputFile, dataCopy);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             /* Run the process */
             String resultOfTheRun = run_process(inputFile);
             System.out.println("RESULT : " + resultOfTheRun);
-//            if (resultOfTheRun != null) {
-//                if (!resultOfTheRun.equals("*** The program has crashed.")) {
-//                    try {
-//                        Files.delete(inputFile);
-//                    } catch (NoSuchFileException x) {
-//                        System.err.format("%s: no such" + " file or directory%n", inputFile);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
+            if (resultOfTheRun != null) {
+                if (!resultOfTheRun.equals("*** The program has crashed.")) {
+                    try {
+                        Files.delete(inputFile);
+                    } catch (NoSuchFileException x) {
+                        System.err.format("%s: no such" + " file or directory%n", inputFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
         }
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        System.out.println(sb.toString());
-        return sb.toString();
     }
 
     private static byte[] randomize_data(byte[] dataCopy, int maxNumberModif, double percentChange) {
@@ -78,13 +70,13 @@ public class Fuzzer {
 
         while ((i <= maxNumberModif) || (currentPercent <= percentChange)) {
 
-            /* Random between 6 and 95 */
+            /* Random between 4 and 95 */
             Random r = new Random();
-            int low = 6;
+            int low = 4;
             int high = 95;
             int indexToModify = r.nextInt(high-low) + low;
 
-            System.out.println("INDEX : " + indexToModify);
+//            System.out.println("INDEX : " + indexToModify);
             /* To not modify the same byte 2 or more time */
             while (booleanData[indexToModify]) {
                 indexToModify = r.nextInt(high-low) + low;
