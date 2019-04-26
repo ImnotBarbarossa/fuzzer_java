@@ -25,10 +25,10 @@ public class GenFuzzer {
         byte[] crashThree= genCrashData(data,9,(byte)0xD1);
 
         /* Crash about version */
-        byte[] crashFour= genCrashData(data,2,(byte)0xF9);
+        byte[] crashFour= genCrashData(data,new int[]{22,23,24,25},new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF});
 
         /* Crash about pixel value */
-        byte[] crashFive= genCrashData(data,56,(byte)0xFF);
+        byte[] crashFive= genCrashData(data,new int[]{18,100},new byte[]{(byte)0x10,0x10});
 
         Path inputFile       = Paths.get("fileCrashFromGenFuzzer/testInputGen1.img");
         Path inputFileTwo    = Paths.get("fileCrashFromGenFuzzer/testInputGen2.img");
@@ -71,6 +71,23 @@ public class GenFuzzer {
         byte[] res = new byte[data.length];
         System.arraycopy( data, 0, res, 0, data.length );
         res[index]=crashValue;
+        return res;
+    }
+
+    /**
+     * Simple method to modify some indexes with some byte values
+     * @param data is the byte array containing a base of data for the converter progam
+     * @param index is a table of indexes where one crash values are injected
+     * @param crashValue is a table of crash values
+     * @return a byte array with modifications done
+     */
+    private static byte[] genCrashData(byte[] data, int[] index, byte[] crashValue) {
+        byte[] res = new byte[data.length];
+        System.arraycopy( data, 0, res, 0, data.length );
+        for (int i = 0; i < index.length; i++) {
+            res[index[i]]=crashValue[i];
+        }
+
         return res;
     }
 
