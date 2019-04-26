@@ -10,26 +10,31 @@ public class GenFuzzer {
     public static void main(String [] args){
 
         byte[] data =initData();
+
         /* Crash about the width or the height */
         byte[] crashOne = genCrashData(data,17,(byte)0xB4);
         byte[] crashOneBis = genCrashData(data,17,(byte)0xEF);
         byte[] crashOneBisBis= genCrashData(data,11,(byte)0xC1);
+
         /* Crash about the number color */
         byte[] crashTwo = genCrashData(data,21,(byte)0xF2);
         byte[] crashTwoBis = genCrashData(data,21,(byte)0xE4);
         byte[] crashTwoBisBis = genCrashData(data,21,(byte)0xB3);
+
         /* Crash about author name */
         byte[] crashThree= genCrashData(data,9,(byte)0xD1);
-        /**/
-        byte[] crashFour= genCrashData(data,0,(byte)0x00);
-        /**/
-        byte[] crashFive= genCrashData(data,0,(byte)0x00);
 
-        Path inputFile       = Paths.get("testInputGen1.img");
-        Path inputFileTwo    = Paths.get("testInputGen2.img");
-        Path inputFileThree  = Paths.get("testInputGen3.img");
-        Path inputFileFour   = Paths.get("testInputGen4.img");
-        Path inputFileFive   = Paths.get("testInputGen5.img");
+        /* Crash about version */
+        byte[] crashFour= genCrashData(data,2,(byte)0xF9);
+
+        /* Crash about pixel value */
+        byte[] crashFive= genCrashData(data,56,(byte)0xFF);
+
+        Path inputFile       = Paths.get("fileCrashFromGenFuzzer/testInputGen1.img");
+        Path inputFileTwo    = Paths.get("fileCrashFromGenFuzzer/testInputGen2.img");
+        Path inputFileThree  = Paths.get("fileCrashFromGenFuzzer/testInputGen3.img");
+        Path inputFileFour   = Paths.get("fileCrashFromGenFuzzer/testInputGen4.img");
+        Path inputFileFive   = Paths.get("fileCrashFromGenFuzzer/testInputGen5.img");
 
          /*Write on the file the array of bytes*/
         try {
@@ -42,20 +47,24 @@ public class GenFuzzer {
             e.printStackTrace();
         }
 
-         /*Run the converter_static exe*/
+        /* *//*Run the converter_static exe*//*
         String resultOfTheRun = run_process(inputFile);
         if (resultOfTheRun != null) {   // check if the result is not null
-                 /*If the program is not crashing we delete the file*/
+            *//*If the program is not crashing we delete the file*//*
             if (!resultOfTheRun.equals("*** The program has crashed.")) {
                 try {
                     Files.delete(inputFile);
+                    Files.delete(inputFileTwo);
+                    Files.delete(inputFileThree);
+                    Files.delete(inputFileFour);
+                    Files.delete(inputFileFive);
                 } catch (NoSuchFileException x) {
                     System.err.format("%s: no such" + " file or directory%n", inputFile);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }
+        }*/
     }
 
     private static byte[] genCrashData(byte[] data, int index, byte crashValue) {
