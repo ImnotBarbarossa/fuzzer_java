@@ -10,24 +10,18 @@ public class GenFuzzer extends Fuzzer{
 
         byte[] data =initData();
 
-        /* Crash about the width or the height */
+        /* Crash about negative value for the width or the height */
         byte[] crashOne = genCrashData(data,17,(byte)0xB4);
-        byte[] crashOneBis = genCrashData(data,17,(byte)0xEF);
-        byte[] crashOneBisBis= genCrashData(data,11,(byte)0xC1);
-
-        /* Crash about the number color */
+        /* Crash about the number color is upper than 256 */
         byte[] crashTwo = genCrashData(data,21,(byte)0xF2);
-        byte[] crashTwoBis = genCrashData(data,21,(byte)0xE4);
-        byte[] crashTwoBisBis = genCrashData(data,21,(byte)0xB3);
-
-        /* Crash about author name */
+        /* Crash about author name is to big */
         byte[] crashThree= genDataWithBigName(data,900);
+        /* Crash about width and height too large */
+        byte[] crashFour= genCrashData(data,new int[]{11,15},new byte[]{(byte) 0xFF, (byte) 0xFF});
+        /* Crash about old version */
+        byte[] crashFive= genDataWithSpecificVersion(data, (byte) 0x14);
 
-        /* Crash about version */
-        byte[] crashFour= genDataWithLittleColorsTable(data);
 
-        /* Crash about pixel value */
-        byte[] crashFive= genDataWithLittlePixelsTable(data);
 
         Path inputFile       = Paths.get("fileCrashFromGenFuzzer/testInputGen1.img");
         Path inputFileTwo    = Paths.get("fileCrashFromGenFuzzer/testInputGen2.img");
@@ -66,22 +60,17 @@ public class GenFuzzer extends Fuzzer{
 //        }
     }
 
-    private static byte[] genDataWithLittlePixelsTable(byte[] data) {
-        byte [] newData = new byte[data.length-(16*16)+1]; // 4*4 is the size of the old table's colors and last 4 is for the new
-        System.arraycopy(data,0,newData,0,data.length-(16*16));
-        newData[newData.length-1]=(byte)Math.floor(Math.random()*255);
-        return newData;
-    }
 
-    private static byte[] genDataWithLittleColorsTable(byte[] data) {
-        byte [] newData = new byte[data.length-(4*4)+4]; // 4*4 is the size of the old table's colors and last 4 is for the new
-        System.arraycopy(data,0,newData,0,21);
-        for (int i = 22; i < 27; i++) {
-            newData[i]= (byte) (Math.floor(Math.random()*255));
-        }
-        for (int i = 27,j=38; i < newData.length && j < data.length; i++,j++) {
-            newData[i]=data[j];
-        }
+    /**
+     *
+     * @param data
+     * @param version between 0 and 100
+     * @return
+     */
+    private static byte[] genDataWithSpecificVersion(byte[] data, byte version) {
+        byte [] newData = new byte[data.length];
+        System.arraycopy(data,0,newData,0,data.length);
+        newData[2]= version;
         return newData;
     }
 
