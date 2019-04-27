@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -11,53 +12,121 @@ public class GenFuzzer extends Fuzzer{
         byte[] data =initData();
 
         /* Crash about negative value for the width or the height */
-        byte[] crashOne = genCrashData(data,17,(byte)0xB4);
+        System.out.println("===== Test negative picture size =====");
+        negativeDimensionPicture(data, Paths.get("fileCrashFromGenFuzzer/testInputGen1.img"));
+
         /* Crash about the number color is upper than 256 */
-        byte[] crashTwo = genCrashData(data,21,(byte)0xF2);
+        System.out.println("===== Test upper 256 value for the number color =====");
+        testOnNumberColor(data, Paths.get("fileCrashFromGenFuzzer/testInputGen2.img"));
+
         /* Crash about author name is to big */
-        byte[] crashThree= genDataWithBigName(data,900);
+        System.out.println("===== Test big author name =====");
+        testOnTheAuthorName(data,Paths.get("fileCrashFromGenFuzzer/testInputGen3.img"));
+
         /* Crash about width and height too large */
-        byte[] crashFour= genCrashData(data,new int[]{11,15},new byte[]{(byte) 0xFF, (byte) 0xFF});
+        System.out.println("===== Test huge picture size =====");
+        testOnTheHugeDimension(data,Paths.get("fileCrashFromGenFuzzer/testInputGen4.img"));
+
         /* Crash about old version */
-        byte[] crashFive= genDataWithSpecificVersion(data, (byte) 0x14);
+        System.out.println("===== Test old version =====");
+        testOnTheOldVersion(data,Paths.get("fileCrashFromGenFuzzer/testInputGen5.img"));
+
+    }
+
+    private static void testOnTheOldVersion(byte[] data, Path path) {
+        byte [] crashData;
+        for (int i = 0; i < 100; i++) {
+            crashData= genDataWithSpecificVersion(data, (byte) i);
+            try {
+                Files.write(path,crashData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (testOnConverter(run_process(path),path))
+                System.out.println("[FOUND]: Crash about an old version : v-"+i);
+        }
+    }
+
+    private static void testOnTheHugeDimension(byte[] data, Path path) {
+        byte [] crashData;
+        int [] hexaIndex = new int[]{11,15};
+        for (int i = 0; i < 255; i++) {
+            crashData=genCrashData(data,hexaIndex,new byte[]{(byte) i, (byte) i});
+            try{
+                Files.write(path,crashData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (testOnConverter(run_process(path),path))
+                System.out.println("[FOUND]: Crash about huge picture dimension");
+
+        }
+    }
 
 
+    private static void testOnTheAuthorName(byte[] data, Path path) {
+        byte [] crashData;
+        for (int i = 20; i < 1000; i+=10) {
+            crashData= genDataWithBigName(data,i);
+            try {
+                Files.write(path,crashData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (testOnConverter(run_process(path),path))
+                System.out.println("[FOUND]: Crash about the author name with length: "+i);
+        }
+    }
 
-        Path inputFile       = Paths.get("fileCrashFromGenFuzzer/testInputGen1.img");
-        Path inputFileTwo    = Paths.get("fileCrashFromGenFuzzer/testInputGen2.img");
-        Path inputFileThree  = Paths.get("fileCrashFromGenFuzzer/testInputGen3.img");
-        Path inputFileFour   = Paths.get("fileCrashFromGenFuzzer/testInputGen4.img");
-        Path inputFileFive   = Paths.get("fileCrashFromGenFuzzer/testInputGen5.img");
+    private static void testOnNumberColor(byte[] data, Path path) {
+        byte[] crashData;
+        for (int i = 0; i < 255; i++) {
+            crashData=genCrashData(data,21,(byte)i);
+            try{
+                Files.write(path,crashData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /* Run the converter_static exe */
+            if (testOnConverter(run_process(path),path)){
+                System.out.println("[FOUND]: Crash about the color number upper than 256");
+            }
+        }
+    }
 
-        /*Write on the file the array of bytes*/
-        try {
-            Files.write(inputFile, crashOne);
-            Files.write(inputFileTwo, crashTwo);
-            Files.write(inputFileThree, crashThree);
-            Files.write(inputFileFour, crashFour);
-            Files.write(inputFileFive, crashFive);
-        } catch (IOException e) {
-            e.printStackTrace();
+    private static void negativeDimensionPicture(byte[] data, Path inputFile) {
+        byte[] crashOne;
+        for (int i = 0; i <255; i++) {
+           crashOne= genCrashData(data,17,(byte)i);
+            try {
+                Files.write(inputFile,crashOne);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /* Run the converter_static exe */
+            if(testOnConverter(run_process(inputFile),inputFile)){
+                System.out.println("[FOUND]: Crash about negative dimension");
+            }
         }
 
-//        /* Run the converter_static exe */
-//        String resultOfTheRun = run_process(inputFile);
-//        if (resultOfTheRun != null) {   // check if the result is not null
-//            /* If the program is not crashing we delete the file */
-//            if (!resultOfTheRun.equals("*** The program has crashed.")) {
-//                try {
-//                    Files.delete(inputFile);
-//                    Files.delete(inputFileTwo);
-//                    Files.delete(inputFileThree);
-//                    Files.delete(inputFileFour);
-//                    Files.delete(inputFileFive);
-//                } catch (NoSuchFileException x) {
-//                    System.err.format("%s: no such" + " file or directory%n", inputFile);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
+    }
+
+    private static boolean testOnConverter(String resultOfTheRun, Path inputFile) {
+        if (resultOfTheRun != null) {   // check if the result is not null
+            /* If the program is not crashing we delete the file */
+            if (!resultOfTheRun.equals("*** The program has crashed.")) {
+                try {
+                    Files.delete(inputFile);
+                } catch (NoSuchFileException x) {
+                    System.err.format("%s: no such" + " file or directory%n", inputFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }else
+                return true;
+        }
+        return false;
     }
 
 
