@@ -1,11 +1,10 @@
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
-public class GenFuzzer {
+public class GenFuzzer extends Fuzzer{
 
     public static void main(String [] args){
 
@@ -22,13 +21,13 @@ public class GenFuzzer {
         byte[] crashTwoBisBis = genCrashData(data,21,(byte)0xB3);
 
         /* Crash about author name */
-        byte[] crashThree= genCrashData(data,24,(byte)0x99); // Color 1
+        byte[] crashThree= genDataWithBigName(data,20);
 
         /* Crash about version */
-        byte[] crashFour= genCrashData(data,new int[]{22,23,24,25},new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF});
+        byte[] crashFour= genDataWithLittleColorsTable(data);
 
         /* Crash about pixel value */
-        byte[] crashFive= genCrashData(data,new int[]{18,100},new byte[]{(byte)0x10,0x10});
+        byte[] crashFive= genDataWithLittlePixelsTable(data);
 
         Path inputFile       = Paths.get("fileCrashFromGenFuzzer/testInputGen1.img");
         Path inputFileTwo    = Paths.get("fileCrashFromGenFuzzer/testInputGen2.img");
@@ -47,24 +46,58 @@ public class GenFuzzer {
             e.printStackTrace();
         }
 
-        /* *//*Run the converter_static exe*//*
-        String resultOfTheRun = run_process(inputFile);
-        if (resultOfTheRun != null) {   // check if the result is not null
-            *//*If the program is not crashing we delete the file*//*
-            if (!resultOfTheRun.equals("*** The program has crashed.")) {
-                try {
-                    Files.delete(inputFile);
-                    Files.delete(inputFileTwo);
-                    Files.delete(inputFileThree);
-                    Files.delete(inputFileFour);
-                    Files.delete(inputFileFive);
-                } catch (NoSuchFileException x) {
-                    System.err.format("%s: no such" + " file or directory%n", inputFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }*/
+//        /* Run the converter_static exe */
+//        String resultOfTheRun = run_process(inputFile);
+//        if (resultOfTheRun != null) {   // check if the result is not null
+//            /* If the program is not crashing we delete the file */
+//            if (!resultOfTheRun.equals("*** The program has crashed.")) {
+//                try {
+//                    Files.delete(inputFile);
+//                    Files.delete(inputFileTwo);
+//                    Files.delete(inputFileThree);
+//                    Files.delete(inputFileFour);
+//                    Files.delete(inputFileFive);
+//                } catch (NoSuchFileException x) {
+//                    System.err.format("%s: no such" + " file or directory%n", inputFile);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+    }
+
+    private static byte[] genDataWithLittlePixelsTable(byte[] data) {
+        byte [] newData = new byte[data.length-(16*16)+1]; // 4*4 is the size of the old table's colors and last 4 is for the new
+        System.arraycopy(data,0,newData,0,data.length-(16*16));
+        newData[newData.length-1]=(byte)Math.floor(Math.random()*255);
+        return newData;
+    }
+
+    private static byte[] genDataWithLittleColorsTable(byte[] data) {
+        byte [] newData = new byte[data.length-(4*4)+4]; // 4*4 is the size of the old table's colors and last 4 is for the new
+        System.arraycopy(data,0,newData,0,21);
+        for (int i = 22; i < 27; i++) {
+            newData[i]= (byte) (Math.floor(Math.random()*255));
+        }
+        for (int i = 27,j=38; i < newData.length && j < data.length; i++,j++) {
+            newData[i]=data[j];
+        }
+        return newData;
+    }
+
+    private static byte[] genDataWithBigName(byte[] data, int nameLength) {
+        byte [] newData = new byte[(data.length-5)+nameLength];// 5 it's for the old size name
+        System.arraycopy(data,0,newData,0,4);
+        /* Creation of the new name with random value */
+        for (int i = 4; i < nameLength+4 ; i++) {
+            newData[i]= (byte) (Math.floor(Math.random()*255)+1); // 1 because we don't want a zero value
+        }
+        newData[nameLength+4]=(byte) 0x00;
+
+        for (int i = (nameLength+4)+1, j= 10; i < newData.length && j < data.length; i++,j++) {
+            newData[i]=data[j];
+        }
+        return newData;
     }
 
     private static byte[] genCrashData(byte[] data, int index, byte crashValue) {
@@ -93,45 +126,9 @@ public class GenFuzzer {
 
     private static byte[] initData() {
         File fileName = new File("testinput.img");
-        return read_file(fileName);
+        return Fuzzer.read_file(fileName);
     }
 
-    /**
-     * Simply read the FIRST line of the result returned by the exec file.
-     * @param inputFile the input file we give to the exec file.
-     * @return the FIRST line of the result generated by the exec file.
-     */
-    private static String run_process(Path inputFile) {
-        try {
-            String line;
-            Process p = Runtime.getRuntime().exec("./converter_static " + inputFile + " testoutput.img");
-            BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if ((line = bre.readLine()) != null) {
-                return line;
-            }
-            bre.close();
-            p.waitFor();
-        }
-        catch (Exception err) {
-            err.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * Read a file.
-     * @param file: the file to read on.
-     * @return a byte array from the file.
-     */
-    private static byte[] read_file(File file) {
-        byte[] data = new byte[0];
-        try {
-            data = Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
 }
 
 
