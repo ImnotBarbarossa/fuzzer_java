@@ -22,7 +22,7 @@ public class GenFuzzer {
         byte[] crashTwoBisBis = genCrashData(data,21,(byte)0xB3);
 
         /* Crash about author name */
-        byte[] crashThree= genCrashData(data,9,(byte)0xD1);
+        byte[] crashThree= genCrashData(data,24,(byte)0x99); // Color 1
 
         /* Crash about version */
         byte[] crashFour= genCrashData(data,new int[]{22,23,24,25},new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF});
@@ -36,7 +36,7 @@ public class GenFuzzer {
         Path inputFileFour   = Paths.get("fileCrashFromGenFuzzer/testInputGen4.img");
         Path inputFileFive   = Paths.get("fileCrashFromGenFuzzer/testInputGen5.img");
 
-         /*Write on the file the array of bytes*/
+        /*Write on the file the array of bytes*/
         try {
             Files.write(inputFile, crashOne);
             Files.write(inputFileTwo, crashTwo);

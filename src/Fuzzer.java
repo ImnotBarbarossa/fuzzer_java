@@ -23,37 +23,13 @@ public class Fuzzer {
 
         /* Run the number of tests asked */
         for (int i = 0; i < numberTests; i++) {
+            System.out.println("===== Test " + i + " =====");
             /* Make a copy of the array to randomize on it */
             byte[] dataCopy = new byte[data.length];
             System.arraycopy( data, 0, dataCopy, 0, data.length );
 
-            /* Call the randomize function and copy the array on the dataCopy array */
-            System.arraycopy(randomize_data(dataCopy, maxNumberModif, percentChange), 0, dataCopy, 0, dataCopy.length );
-
-            /* The path where we write the tests files */
-            Path inputFile = Paths.get("testinput" + i + ".img");
-
-            /* Write on the file the array of bytes */
-            try {
-                Files.write(inputFile, dataCopy);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            /* Run the converter_static exe */
-            String resultOfTheRun = run_process(inputFile);
-            if (resultOfTheRun != null) {   // check if the result is not null
-                /* If the program is not crashing we delete the file */
-                if (!resultOfTheRun.equals("*** The program has crashed.")) {
-                    try {
-                        Files.delete(inputFile);
-                    } catch (NoSuchFileException x) {
-                        System.err.format("%s: no such" + " file or directory%n", inputFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            /* Call the randomize function and test it with the converter exe */
+            randomize_data(dataCopy, maxNumberModif, percentChange);
         }
     }
 
@@ -62,9 +38,8 @@ public class Fuzzer {
      * @param dataCopy the data array of bytes.
      * @param maxNumberModif the maximum number of modification to do on the array.
      * @param percentChange the maximum percentage of change we can make on the array.
-     * @return the array of bytes modified randomly.
      */
-    private static byte[] randomize_data(byte[] dataCopy, int maxNumberModif, double percentChange) {
+    private static void randomize_data(byte[] dataCopy, int maxNumberModif, double percentChange) {
         int i = 1;
         double currentPercent = 0.0;    // the current percentage of modification.
         /* Copies of the tab */
@@ -88,11 +63,52 @@ public class Fuzzer {
             dataCopy[index] = randomArray[index];   // Replacing the element to randomize.
             booleanData[index] = true;  // Set the index of this element to true to don't modify after.
 
+            /*     */
+
+            /* The path where we write the tests files */
+            Path inputFile = Paths.get("testInput" + i + ".img");
+
+            /* Write on the file the array of bytes */
+            try {
+                Files.write(inputFile, dataCopy);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            /* Run the converter_static exe */
+            String resultOfTheRun = run_process(inputFile);
+            if (resultOfTheRun != null) {   // check if the result is not null
+                /* If the program is not crashing we delete the file */
+                if (!resultOfTheRun.equals("*** The program has crashed.")) {
+                    try {
+                        Files.delete(inputFile);
+                    } catch (NoSuchFileException x) {
+                        System.err.format("%s: no such" + " file or directory%n", inputFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    // SAVE THE FILE
+                    /* Write on the file the array of bytes */
+                    Path solutionFile = Paths.get("solutionInput" + i + ".img");
+                    try {
+                        Files.write(solutionFile, dataCopy);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("=============== THE PROGRAM CRASHED ===============");
+                    System.out.println("Crash at byte : " + index + " with value : hex : " + String.format("0x%02X", dataCopy[index]) + " OR bytes : " + dataCopy[index]);
+                    break;
+                }
+            }
+
+            /*     */
+
             /* Calculating the new percent of modif and iterate the max number of modif */
             currentPercent = (double) i / (double) dataCopy.length;
             i++;
         }
-        return dataCopy;
     }
 
     /**
