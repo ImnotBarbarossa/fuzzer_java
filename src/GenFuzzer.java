@@ -21,7 +21,7 @@ public class GenFuzzer extends Fuzzer{
         byte[] crashTwoBisBis = genCrashData(data,21,(byte)0xB3);
 
         /* Crash about author name */
-        byte[] crashThree= genDataWithBigName(data,20);
+        byte[] crashThree= genDataWithBigName(data,900);
 
         /* Crash about version */
         byte[] crashFour= genDataWithLittleColorsTable(data);
