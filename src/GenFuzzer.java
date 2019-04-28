@@ -44,16 +44,17 @@ public class GenFuzzer extends Fuzzer{
             }
             if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about an old version : v-"+i);
-                break;
+                return;
             }
         }
     }
-    /* ICI TU SAIS VERIFIER */
+
     private static void testOnTheHugeDimension(byte[] data, Path path) {
         byte [] crashData;
         int [] hexaIndex = new int[]{11,15};
-        for (int i = 0; i < 255; i++) {
-            crashData=genCrashData(data,hexaIndex,new byte[]{(byte) i, (byte) i});
+//        for (int i = 200; i <256; i++) {
+//            System.out.println("DEBUG : i:"+ String.format("%02x",(byte)i));
+            crashData=genCrashData(data,hexaIndex,new byte[]{(byte) 0xff, (byte) 0xff});
             try{
                 Files.write(path,crashData);
             } catch (IOException e) {
@@ -61,10 +62,8 @@ public class GenFuzzer extends Fuzzer{
             }
             if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about huge picture dimension");
-                break;
             }
-            System.out.println("i:"+i);
-        }
+//        }
     }
 
 
@@ -79,7 +78,7 @@ public class GenFuzzer extends Fuzzer{
             }
             if (testOnConverter(run_process(path),path)) {
                 System.out.println("[FOUND]: Crash about the author name with length: " + i);
-                break;
+                return;
             }
         }
     }
@@ -96,7 +95,7 @@ public class GenFuzzer extends Fuzzer{
             /* Run the converter_static exe */
             if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about the color number upper than 256");
-                break;
+                return;
             }
         }
     }
@@ -113,16 +112,15 @@ public class GenFuzzer extends Fuzzer{
             /* Run the converter_static exe */
             if(testOnConverter(run_process(inputFile),inputFile)){
                 System.out.println("[FOUND]: Crash about negative dimension");
-                break;
+                return;
             }
         }
 
     }
 
-    private static boolean testOnConverter(String resultOfTheRun, Path inputFile) {
-        if (resultOfTheRun != null) {   // check if the result is not null
-            /* If the program is not crashing we delete the file */
-            if (!resultOfTheRun.equals("*** The program has crashed.")) {
+    private static boolean testOnConverter(boolean resultOfTheRun, Path inputFile) {
+        /* If the program is not crashing we delete the file */
+            if (!resultOfTheRun) {
                 try {
                     Files.delete(inputFile);
                 } catch (NoSuchFileException x) {
@@ -133,8 +131,6 @@ public class GenFuzzer extends Fuzzer{
                 return false;
             }
             return true;
-        }
-        return false;
     }
 
 

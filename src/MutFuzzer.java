@@ -11,10 +11,16 @@ public class MutFuzzer extends Fuzzer {
 
         /* Get the data from the line */
         /* Do this program arg : "testinput.img" 100 50 0.01 */
+        if (args.length < 4){
+            System.out.println("Wrong number parameters");
+            return;
+        }
         File fileName = new File(args[0]);
         int numberTests = Integer.parseInt(args[1]);
         int maxNumberModif = Integer.parseInt(args[2]);
         double percentChange = Double.parseDouble(args[3]);
+        if (percentChange> 1)
+            percentChange = 1;
 
         /* Read the file */
         byte[] data = read_file(fileName);
@@ -65,8 +71,6 @@ public class MutFuzzer extends Fuzzer {
             dataCopy[index] = randomArray[index];   // Replacing the element to randomize.
             booleanData[index] = true;  // Set the index of this element to true to don't modify after.
 
-            /*     */
-
             /* The path where we write the tests files */
             Path inputFile = Paths.get("testInput" + i + ".img");
 
@@ -78,31 +82,27 @@ public class MutFuzzer extends Fuzzer {
             }
 
             /* Run the converter_static exe */
-            String resultOfTheRun = Fuzzer.run_process(inputFile);
-            if (resultOfTheRun != null) {   // check if the result is not null
-                /* If the program is not crashing we delete the file */
-                if (!resultOfTheRun.equals("*** The program has crashed.")) {
-                    try {
-                        Files.delete(inputFile);
-                    } catch (NoSuchFileException x) {
-                        System.err.format("%s: no such" + " file or directory%n", inputFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            if (!run_process(inputFile)) {
+                try {
+                    Files.delete(inputFile);
+                } catch (NoSuchFileException x) {
+                    System.err.format("%s: no such" + " file or directory%n", inputFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                else {
-                    // SAVE THE FILE
-                    /* Write on the file the array of bytes */
-                    Path solutionFile = Paths.get("solutionInput" + i + ".img");
-                    try {
-                        Files.write(solutionFile, dataCopy);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("=============== THE PROGRAM CRASHED ===============");
-                    System.out.println("Crash at byte : " + index + " with value : hex : " + String.format("0x%02X", dataCopy[index]) + " OR bytes : " + dataCopy[index]);
-                    break;
+            }
+            else {
+                // SAVE THE FILE
+                /* Write on the file the array of bytes */
+                Path solutionFile = Paths.get("fileCrashFromMutFuzzer/solutionInput" + i + ".img");
+                try {
+                    Files.write(solutionFile, dataCopy);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                System.out.println("=============== THE PROGRAM CRASHED ===============");
+                System.out.println("Crash at byte : " + index + " with value : hex : " + String.format("0x%02X", dataCopy[index]) + " OR bytes : " + dataCopy[index]);
+                break;
             }
 
             /* Calculating the new percent of modif and iterate the max number of modif */
