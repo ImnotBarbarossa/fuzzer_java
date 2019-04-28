@@ -42,11 +42,13 @@ public class GenFuzzer extends Fuzzer{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (testOnConverter(run_process(path),path))
+            if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about an old version : v-"+i);
+                break;
+            }
         }
     }
-
+    /* ICI TU SAIS VERIFIER */
     private static void testOnTheHugeDimension(byte[] data, Path path) {
         byte [] crashData;
         int [] hexaIndex = new int[]{11,15};
@@ -57,9 +59,11 @@ public class GenFuzzer extends Fuzzer{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (testOnConverter(run_process(path),path))
+            if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about huge picture dimension");
-
+                break;
+            }
+            System.out.println("i:"+i);
         }
     }
 
@@ -73,8 +77,10 @@ public class GenFuzzer extends Fuzzer{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (testOnConverter(run_process(path),path))
-                System.out.println("[FOUND]: Crash about the author name with length: "+i);
+            if (testOnConverter(run_process(path),path)) {
+                System.out.println("[FOUND]: Crash about the author name with length: " + i);
+                break;
+            }
         }
     }
 
@@ -90,6 +96,7 @@ public class GenFuzzer extends Fuzzer{
             /* Run the converter_static exe */
             if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about the color number upper than 256");
+                break;
             }
         }
     }
@@ -106,6 +113,7 @@ public class GenFuzzer extends Fuzzer{
             /* Run the converter_static exe */
             if(testOnConverter(run_process(inputFile),inputFile)){
                 System.out.println("[FOUND]: Crash about negative dimension");
+                break;
             }
         }
 
@@ -123,8 +131,8 @@ public class GenFuzzer extends Fuzzer{
                     e.printStackTrace();
                 }
                 return false;
-            }else
-                return true;
+            }
+            return true;
         }
         return false;
     }
