@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -15,23 +14,22 @@ public class MutFuzzer extends Fuzzer {
             System.out.println("Wrong number parameters");
             return;
         }
-        File fileName = new File(args[0]);
+        /* Read the file with the first program's argument */
+        byte[] data = initData(args[0]);
+
+        /* Initialisation with other program's arguments*/
         int numberTests = Integer.parseInt(args[1]);
         int maxNumberModif = Integer.parseInt(args[2]);
         double percentChange = Double.parseDouble(args[3]);
-        if (percentChange> 1)
+
+        /* Test if the value for this variable  is between 0 and 1 because it's a proportion value */
+        if (percentChange < 0 || percentChange > 1)
             percentChange = 1;
-
-        /* Read the file */
-        byte[] data = read_file(fileName);
-
-        /* Printing all the data for debug purpose */
-        // print_data(data, numberTests, maxNumberModif, percentChange);
-
 
         /* Run the number of tests asked */
         for (int i = 0; i < numberTests; i++) {
             System.out.println("===== Test " + i + " =====");
+
             /* Make a copy of the array to randomize on it */
             byte[] dataCopy = new byte[data.length];
             System.arraycopy( data, 0, dataCopy, 0, data.length );
