@@ -25,7 +25,7 @@ You can verify that the files crash the converter_static program well with the f
 ./converter_static fileCrashFromMutFuzzer/fileYouChoose.img testouput.img
 ```
 
-##About the generation-based fuzzer
+## About the generation-based fuzzer
 
 We find 5 different ways to crash the converter_static program:
 1. `testInputGen1.img` there is an example of the input file where the the highest byte of the height is change and when it'll be converter in signed number it's negative number. So the memory allocation will be negative and the program crash.
