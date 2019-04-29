@@ -1,8 +1,13 @@
-# lingi2347_security
+# LINGI2347_Computer_System_Security
 A repository who regroup all the projects for the LINGI2347 course.
 
-## How to use it
-To run the program mutation-based fuzzer , use the following command:
+This repository contains 2 projects :
+
+## Project 1: Fuzzer
+Implementation of a Fuzzer in Java.
+
+### How to use it
+To run the program mutation-based fuzzer, use the following command:
 ```` 
 java src/MutFuzzer testinput.img 200 100 0.01
 ````
@@ -25,11 +30,16 @@ You can verify that the files crash the converter_static program well with the f
 ./converter_static fileCrashFromMutFuzzer/fileYouChoose.img testouput.img
 ```
 
-## About the generation-based fuzzer
+### About the generation-based fuzzer
 
 We find 5 different ways to crash the converter_static program:
-1. `testInputGen1.img` there is an example of the input file where the the highest byte of the height is change and when it'll be converter in signed number it's negative number. So the memory allocation will be negative and the program crash.
+1. `testInputGen1.img` there is an example of the input file where the highest byte of the height is change and when it'll be converter in signed number it's negative number. So the memory allocation will be negative and the program crash.
 2. `testInputGen2.img` is the input file where 'numcolors' value in the header is too high. Actually the specification program says that it supports no more than 256 colors. However the program doesn't manage the value upper than 256 and it crash.
 3. `testInputGen3.img` is the input file where we generate a name with a big size to make a buffer overflow in the converter_static program.
-4. `testInputGen4.img` is the input file where we generate in the header a big positive width and a positive height that'll generate too big picture in the converter_static program and it crash.
+4. `testInputGen4.img` is the input file where we generate in the header a big positive width and a positive height that'll generate a too big picture in the converter_static program and it crash.
 5. `testInputGen5.img` is the input file where an old version (v20, for example) the program crash.
+
+
+## Project 2
+The README for the project 2
+
