@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.Random;
 
 public class MutFuzzer extends Fuzzer {
+
     public static void main(String[] args) {
 
         /* Get the data from the line */
