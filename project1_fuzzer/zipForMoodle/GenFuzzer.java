@@ -115,6 +115,7 @@ public class GenFuzzer extends Fuzzer{
             /* Run the converter_static exe */
             if (testOnConverter(run_process(path),path)){
                 System.out.println("[FOUND]: Crash about huge picture dimension");
+                return;
             }
         }
     }

@@ -5,7 +5,8 @@
 ### How to use it
 To run the program mutation-based fuzzer, use the following command:
 ```` 
-java src/MutFuzzer testinput.img 200 100 0.01
+javac Fuzzer.java MutFuzzer.java
+java MutFuzzer testinput.img 200 100 0.01
 ````
 - _"testinput.img"_ is the name of the correct input file,
 - _200_ is the number of test runs to make,
@@ -15,7 +16,8 @@ create the next input file for the current test run. Input files that crash the 
 
 And to run the generation-based fuzzer, use the following command:
 ```
-java src/GenFuzzer
+javac Fuzzer.java GenFuzzer.java
+java GenFuzzer
 ```
 
 The two programs save files that crashed the converter_static program into the own repository, fileCrashFromMutFuzzer and fileCrashFromGenFuzzer.
